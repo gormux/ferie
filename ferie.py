@@ -1,16 +1,30 @@
 from flask import Flask, render_template
 from typing import List
-from workalendar.europe import France, FranceAlsaceMoselle, Luxembourg, BadenWurttemberg
 from datetime import datetime
 import locale
+import importlib
 
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 app = Flask(__name__)
 INDEX = "index.html"
 TODAY = datetime.today().date()
+ZONES = ["africa", "america", "asia", "europe", "oceania", "usa"]
 
 
-def get_next_date(feries: List[datetime]) -> datetime:
+def get_cal(zone=None):
+    zones = {}
+    continents = {_: importlib.import_module(f"workalendar.{_}") for _ in ZONES}
+    for _, v in continents.items():
+        for item in dir(v):
+            truc = getattr(v, item)
+            if isinstance(truc, type):
+                zones[item] = truc
+    if zone:
+        return zones[zone]
+    return zones.keys()
+
+
+def get_next_date(cal, feries: List[datetime]) -> datetime:
     """Gets next holiday date
 
     :param feries: list of holidays
@@ -21,10 +35,10 @@ def get_next_date(feries: List[datetime]) -> datetime:
     try:
         return next(_ for _ in feries if TODAY < _).strftime(r"%d %B")
     except StopIteration:
-        return [_[0] for _ in France().holidays(TODAY.year + 1)][0]
+        return [_[0] for _ in cal().holidays(TODAY.year + 1)][0]
 
 
-def define_message(feries: List[datetime]) -> str:
+def define_message(cal, feries: List[datetime]) -> str:
     """Defines message for HTML page
 
     :param feries: list of holidays
@@ -35,32 +49,17 @@ def define_message(feries: List[datetime]) -> str:
     if TODAY in feries:
         return "Oui, profitez-en bien !"
     else:
-        return f"Non, malheureusement, vivement le {get_next_date(feries)}"
+        return f"Non, malheureusement, vivement le {get_next_date(cal, feries)}"
 
 
 @app.route("/")
-def ferie():
-    feries = [_[0] for _ in France().holidays(TODAY.year)]
-    message = define_message(feries)
-    return render_template(INDEX, message=message, alsace=False)
+def main():
+    return render_template("list.html", zones=get_cal())
 
 
-@app.route("/alsace-moselle")
-def ferie_am():
-    feries = [_[0] for _ in FranceAlsaceMoselle().holidays(TODAY.year)]
-    message = define_message(feries)
-    return render_template(INDEX, message=message, alsace=True)
-
-
-@app.route("/lux")
-def ferie_lux():
-    feries = [_[0] for _ in Luxembourg().holidays(TODAY.year)]
-    message = define_message(feries)
-    return render_template(INDEX, message=message, alsace=True)
-
-
-@app.route("/bw")
-def ferie_bw():
-    feries = [_[0] for _ in BadenWurttemberg().holidays(TODAY.year)]
-    message = define_message(feries)
-    return render_template(INDEX, message=message, alsace=True)
+@app.route("/<zone>")
+def ferie(zone: str):
+    cal = get_cal(zone)
+    feries = [_[0] for _ in cal().holidays(TODAY.year)]
+    message = define_message(cal, feries)
+    return render_template(INDEX, message=message)
