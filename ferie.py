@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from typing import List
-from workalendar.europe import France, FranceAlsaceMoselle
+from workalendar.europe import France, FranceAlsaceMoselle, Luxembourg
 from datetime import datetime
 import locale
 
@@ -48,5 +48,12 @@ def ferie():
 @app.route("/alsace-moselle")
 def ferie_am():
     feries = [_[0] for _ in FranceAlsaceMoselle().holidays(TODAY.year)]
+    message = define_message(feries)
+    return render_template(INDEX, message=message, alsace=True)
+
+
+@app.route("/lux")
+def ferie_lux():
+    feries = [_[0] for _ in Luxembourg().holidays(TODAY.year)]
     message = define_message(feries)
     return render_template(INDEX, message=message, alsace=True)
