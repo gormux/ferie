@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css" integrity="sha384-Uu6IeWbM+gzNVXJcM9XV3SohHtmWE+3VGi496jvgX1jyvDTXfdK+rfZc8C1Aehk5" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Est-ce que c'est férié aujourd'hui ?</title>
+    <style> body { background-color: #E6E6FA; } </style>
+</head>
+<body>
+<div class="pure-g">
+    <div class="pure-u-1-1">
+        <p><h2>{{message}}</h2></p>
+        {% if alsace == False %}
+        <p>
+            <a href="/alsace-moselle">En Alsace-Moselle ? C'est par ici.</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>
