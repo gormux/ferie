@@ -7,7 +7,6 @@ import importlib
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 app = Flask(__name__)
 INDEX = "index.html"
-TODAY = datetime.today().date()
 ZONES = ["africa", "america", "asia", "europe", "oceania", "usa"]
 
 
@@ -32,6 +31,7 @@ def get_next_date(cal, feries: List[datetime]) -> datetime:
     :return: next holiday
     :rtype: datetime
     """
+    TODAY = datetime.today().date()
     try:
         return next(_ for _ in feries if TODAY < _).strftime(r"%d %B")
     except StopIteration:
@@ -46,6 +46,7 @@ def define_message(cal, feries: List[datetime]) -> str:
     :return: message
     :rtype: str
     """
+    TODAY = datetime.today().date()
     if TODAY in feries:
         return "Oui, profitez-en bien !"
     else:
@@ -60,6 +61,7 @@ def main():
 @app.route("/<zone>")
 def ferie(zone: str):
     cal = get_cal(zone)
+    TODAY = datetime.today().date()
     feries = [_[0] for _ in cal().holidays(TODAY.year)]
     message = define_message(cal, feries)
     return render_template(INDEX, message=message)
